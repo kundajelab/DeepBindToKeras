@@ -491,7 +491,7 @@ void reverse_complement(char* seq, int seq_len)
 
 /* Apply the model directly to the given DNA/RNA sequence string,
    e.g. "ACCGTCG". Return the score of the entire sequence. */
-float apply_model(deepbind_model_t* model, char* seq, int seq_len)
+float apply_model(deepbind_model_t* model, char* seq, int seq_len, char* fullseq, int maxlen, int offset)
 {
 	int n = seq_len;
 	int m = model->detector_len;
@@ -519,8 +519,12 @@ float apply_model(deepbind_model_t* model, char* seq, int seq_len)
 			/* Convolve */
 			float featuremap_ik = 0;
 			for (j = 0; j < m; ++j) {
-				char c = ((i-m+1)+j >= 0 && (i-m+1)+j < n) ? seq[(i-m+1)+j] : 'N';
+				/*char c = ((i-m+1)+j >= 0 && (i-m+1)+j < n) ? seq[(i-m+1)+j] : 'N';*/
+				char c = ((offset+i-m+1)+j >= 0 && (offset+i-m+1)+j < maxlen) ? fullseq[(offset+i-m+1)+j] : 'N';
 				int index = base2index[(unsigned char)c];
+                /*if (k==0) {
+                    printf("%c",c);
+                }*/
 				if (index == UNKNOWN_BASE) {
 					for (index = 0; index < 4; ++index)
 						featuremap_ik += .25f*detectors[indexof_detector_coeff(d, k, j, index)];
@@ -528,6 +532,9 @@ float apply_model(deepbind_model_t* model, char* seq, int seq_len)
 					featuremap_ik += detectors[indexof_detector_coeff(d, k, j, index)];
 				}
 			}
+            /*if (k==0) {
+                printf("\n");
+            }*/
 
 			/* Shift and rectify */
 			featuremap_ik += thresholds[k];
@@ -601,9 +608,9 @@ float scan_model(deepbind_model_t* model, char* seq, int seq_len, int window_siz
 	if (window_size < 1)
 		window_size = (int)(model->detector_len*1.5);
 	if (seq_len <= window_size)
-		return apply_model(model, seq, seq_len);
+		return apply_model(model, seq, seq_len, seq, seq_len, 0);
 	for (i = 0; i < seq_len-window_size+1; i++) {
-		float score_i = apply_model(model, seq+i, window_size);
+		float score_i = apply_model(model, seq+i, window_size, seq, seq_len, i);
 		if (average_flag)
 			scan_score += score_i;
 		else if (score_i > scan_score)

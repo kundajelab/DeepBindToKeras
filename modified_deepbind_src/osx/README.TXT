@@ -1,3 +1,13 @@
+Av here. This is a version of the deepbind code containing the modification
+described in https://github.com/kundajelab/DeepBindToKeras/blob/master/README.md.
+With this modification, the results on the example sequences are:
+
+D00210.001  D00120.001  D00410.003  D00328.003
+7.059108    -0.187212   -0.649447   -0.026180
+-0.172609   4.295672    0.666795    -0.910773
+-0.140683   0.181295    5.885349    -0.026180
+-0.174985   -0.152521   -0.379695   17.682623
+
 --------------
 DEEPBIND v0.11
 --------------
